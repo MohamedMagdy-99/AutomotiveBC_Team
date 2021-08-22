@@ -11,10 +11,10 @@
 
 /*- INCLUDES -----------------------------------------------*/
 #include "..\..\Microcontroller\Platform_Types.h"
-#include "../Interrupt Driver/ISR.h"
+#include "../Interrupts Handling Module/InterruptsHandler.h"
 #include "..\..\Microcontroller\Atmega32 Registers\Gpt_Regs.h"
 
-#include "Gpt_LCfg.h"
+#include "Gpt_Cfg.h"
 //#include "../../MCAL/Interrupt Driver/ISR.h"
 
 /*- CONSTANTS ----------------------------------------------*/

@@ -18,13 +18,12 @@
 /********************************Global variables******************************/
 
 static uint8_t US_State[US_USED_CHANNELS] = {US_STOPPED};
-	
-
+    
 
 Std_ReturnType Ultrasonic_Init(void)
 {    
 	
-	//Dio_init(strDio_pins);
+	Dio_init(strDio_pins);
 	ICU_Init();
 	
 	return E_OK;

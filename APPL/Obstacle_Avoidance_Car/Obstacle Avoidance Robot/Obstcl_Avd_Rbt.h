@@ -23,11 +23,11 @@
 #define OB_AVD_DISTANCE_UNDER_THRSHOLD			2U
 #define OB_AVD_DISTANCE_EQUAL_THRSHOLD			3U
 #define OB_AVD_DISTANCE_OVER_THRSHOLD			4U
-#define OB_AVD_HIGH_THRESHOLD					55U
-#define OB_AVD_LOW_THRESHOLD					45U
+#define OB_AVD_HIGH_THRESHOLD					52U
+#define OB_AVD_LOW_THRESHOLD					48U
 #define OB_RBT_FRWRD_SPEED						20U
 #define OB_RBT_BKWRD_SPEED						20U
-#define OB_RBT_RIGHT_SPEED						20U
+#define OB_RBT_RIGHT_SPEED						25U
 /*******************************************************************************
  *                          Module Data Types                                  *
  *******************************************************************************/

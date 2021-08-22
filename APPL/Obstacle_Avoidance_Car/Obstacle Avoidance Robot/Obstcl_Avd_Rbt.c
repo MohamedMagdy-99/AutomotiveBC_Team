@@ -45,18 +45,6 @@ Std_ReturnType ObstacleAvoidance_init(void)
 /**************************************************************************************/
 /*								Function Implementation								  */
 /**************************************************************************************/
-	EnableGlobalInterrupts();
-	/* Call the Robot Module initializer */
-	if(ROBOT_STATUS_ERROR_OK != RbtSteering_init())
-	{
-		return E_NOT_OK;
-	}
-	
-	/* Call the Sensing Module initializer */
-	if(E_OK != Sensing_init())
-	{
-		return E_NOT_OK;		
-	}
 
 	/* Update ObstclAvd_State to initialized */
 	ObstclAvd_State = OBSTCLE_AVD_MOD_INITIALIZED;
@@ -89,17 +77,15 @@ Std_ReturnType ObstacleAvoidance_mainFunction(void)
 /**************************************************************************************/
 /*								Function Implementation								  */
 /**************************************************************************************/
-	/* Non Blocking Display initialization */
-	Display_init(DISPLAY_LCD_16x2_ID);
-	Display_printString(DISPLAY_LCD_16x2_ID, (uint8_t*) "Distance: ");
 
-	uint16_t tempDistance_u16 = 0;
 	
+	/* Distance Getter from Sensing Module */
 /* Get the distance to the nearest obstacle */
-	if(Sensing_getReading(SENSING_FRONT_OBSTACLE_DISTANCE, &tempDistance_u16) == E_OK)
-	{
-		distance_u16 = tempDistance_u16;
-	}
+	Sensing_getReading(SENSING_FRONT_OBSTACLE_DISTANCE, &distance_u16);
+	
+	/* Integer Setter for Display Module */
+	set_DisplayInteger(DISPLAY_LCD_16x2_ID, distance_u16);
+	
 /* Take Robot Action */
 	/* If distance > OB_AVD_HIGH_THRESHOLD */
 	if(distance_u16 > OB_AVD_HIGH_THRESHOLD)
@@ -107,7 +93,9 @@ Std_ReturnType ObstacleAvoidance_mainFunction(void)
 		if (ObstclAvd_State != OB_AVD_DISTANCE_OVER_THRSHOLD)
 		{
 			ObstclAvd_State = OB_AVD_DISTANCE_OVER_THRSHOLD;
-			RbtSteering_move(ROBOT_DIR_FRWRD, OB_RBT_FRWRD_SPEED);
+			
+			/* Action Setter for Robot Steering Module */
+			RbtSteering_setData(ROBOT_DIR_FRWRD, OB_RBT_FRWRD_SPEED);
 		}
 	}
 	/* If distance within threshold range */
@@ -116,7 +104,9 @@ Std_ReturnType ObstacleAvoidance_mainFunction(void)
 		if (ObstclAvd_State != OB_AVD_DISTANCE_EQUAL_THRSHOLD)
 		{
 			ObstclAvd_State = OB_AVD_DISTANCE_EQUAL_THRSHOLD;
-			RbtSteering_move(ROBOT_DIR_RIGHT, OB_RBT_RIGHT_SPEED);
+			
+			/* Action Setter for Robot Steering Module */
+			RbtSteering_setData(ROBOT_DIR_RIGHT, OB_RBT_RIGHT_SPEED);
 		}
 	}
 	/* If distance < OB_AVD_LOW_THRESHOLD */
@@ -125,14 +115,18 @@ Std_ReturnType ObstacleAvoidance_mainFunction(void)
 		if (ObstclAvd_State != OB_AVD_DISTANCE_UNDER_THRSHOLD)
 		{
 			ObstclAvd_State = OB_AVD_DISTANCE_UNDER_THRSHOLD;
-			RbtSteering_move(ROBOT_DIR_BKWRD, OB_RBT_BKWRD_SPEED);
+			
+			/* Action Setter for Robot Steering Module */
+			RbtSteering_setData(ROBOT_DIR_BKWRD, OB_RBT_BKWRD_SPEED);
 		}
 	}else
 	{
 		/* All cases are covered */
 	}
 	
-	Display_printInteger(DISPLAY_LCD_16x2_ID, distance_u16);
+	
+	
+
 /*******************************************************************************/
 /*******************************************************************************/
 
