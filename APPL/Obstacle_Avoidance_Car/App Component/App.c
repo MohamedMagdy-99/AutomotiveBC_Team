@@ -70,10 +70,25 @@ enuApp_Status_t App_init(void)
 /*								Function Implementation								  */
 /**************************************************************************************/
 
+	EnableGlobalInterrupts();
+	/* Call the Robot Module initializer */
+	if(ROBOT_STATUS_ERROR_OK != RbtSteering_init())
+	{
+		return E_NOT_OK;
+	}
+		
+	/* Call the Sensing Module initializer */
+	if(E_OK != Sensing_init())
+	{
+		return APP_STATUS_ERROR_NOK;
+	}
+	
 	/* Call the Robot Module initializer */
 	if(E_OK != ObstacleAvoidance_init())
+	{
 		return APP_STATUS_ERROR_NOK;
-
+	}
+		
 	/* Update enuCurrentAppStatus to initialized */
 	enuCurrentAppStatus = APP_STATUS_INITIALIZED;
 	return APP_STATUS_ERROR_OK;
@@ -106,9 +121,17 @@ enuApp_Status_t App_update(void)
 /**************************************************************************************/
 /*								Function Implementation								  */
 /**************************************************************************************/
+	/* Calling the Main function of the Sensing Module */
+	Sensing_mainFunction();
+	
 	/* Calling the Main function of the Obstacle Avoidance Application */
 	ObstacleAvoidance_mainFunction();
 	
+	/* Calling the Main function of the Robot Steering Module */
+	RbtSteering_mainFunction();
+	
+	/* Calling the Main function of the Display Module */
+	Display_mainFunction();
 /*******************************************************************************/
 /*******************************************************************************/
 

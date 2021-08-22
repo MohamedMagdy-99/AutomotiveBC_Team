@@ -15,7 +15,7 @@
 /*          BKWARD == AntiClock Wise            */
 #define MOTOR_BKWRD		MOTOR_DIR_ANTI_CLK_WISE
 
-#define STEERING_RIGHT_DELAY			800U
+#define STEERING_RIGHT_DELAY			500U
 #define STEERING_LEFT_DELAY				0U
 
 #endif /* RBT_STEERING_CFG_H_ */

@@ -48,9 +48,10 @@ uint8_t gu8_currentY = Initial_Value;
 uint8_t gu8_currentlyRunningCommand = LCD_INIT_4BITS_COMMAND_1_ID;
 
 /* one time strings option, to be redesigned later in cfg.c */
-uint8_t gau8_oneTimeString_1[11] = "Distance: ";
+uint8_t gau8_oneTimeString_1[11] = "Distance:";
 
 uint8_t gu8_oneTimeString_1_Flag = FALSE;
+
 
 #endif
 
@@ -378,12 +379,12 @@ enuLcd_Status_t Lcd_sendString(uint8_t* au8_string)
 		return LCD_STATUS_ERROR_NOK;
 	}
 	/******************** TEMP ********************/
-	if(gu8_oneTimeString_1_Flag == TRUE && stringCmp(au8_string, gau8_oneTimeString_1) == TRUE)
-	{
-		u8_stringIndexCounter = Initial_Value;
-		LCD_SEND_STRING_STATE = IDLE;
-		return LCD_STATUS_ERROR_NOK;
-	}
+ 	if(gu8_oneTimeString_1_Flag == TRUE && stringCmp(au8_string, gau8_oneTimeString_1) == TRUE)
+ 	{
+ 		u8_stringIndexCounter = Initial_Value;
+ 		LCD_SEND_STRING_STATE = IDLE;
+ 		return LCD_STATUS_ERROR_NOK;
+ 	}
 	/*********************************************/
 	if(au8_string[u8_stringIndexCounter]!='\0')
 	{
@@ -405,14 +406,14 @@ enuLcd_Status_t Lcd_sendString(uint8_t* au8_string)
 		LCD_SEND_STRING_STATE = IDLE;
 		
 		/*********************** TEMP *********************************/
-		if(gu8_oneTimeString_1_Flag == FALSE)
-		{
-			if(stringCmp(gau8_currentString, gau8_oneTimeString_1) == TRUE)
-			{
-				gu8_oneTimeString_1_Flag = TRUE;
-				EmptyString(gau8_currentString);
-			}
-		}
+ 		if(gu8_oneTimeString_1_Flag == FALSE)
+ 		{
+ 			if(stringCmp(gau8_currentString, gau8_oneTimeString_1) == TRUE)
+ 			{
+ 				gu8_oneTimeString_1_Flag = TRUE;
+ 				EmptyString(gau8_currentString);
+ 			}
+ 		}
 		/**************************************************************/
 	}
 	
@@ -468,7 +469,6 @@ enuLcd_Status_t Lcd_sendVariableInt(uint16_t u16_number, uint8_t u8_base)
 	{
 		/* RUN */
 	}
-	
 	
 	if(gau8_currentInteger[u8_integerIndexCounter]!='\0')
 	{

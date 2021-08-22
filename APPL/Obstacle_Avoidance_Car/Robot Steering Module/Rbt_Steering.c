@@ -18,15 +18,22 @@
  */
 #define ROBOT_STOPPED				0U
 #define ROBOT_RUNNING				1U
-
+#define DATA_CHANGED				1U
+#define DATA_NOT_CHANGED			0U
 /*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*/
 /*-*-*-*-*- GLOBAL STATIC VARIABLES *-*-*-*-*-*/
+/* Indicator of the data changed */
+uint8_t DataChange_Flag = DATA_NOT_CHANGED;
+
 /* Holds the current state of the Robot */
 RobotState_t RobotState_gau8 = ROBOT_STOPPED;
 
 /* Holds the status of the Robot Module */
 uint8_t RobotModuleStatus_gu8 = ROBOT_STATUS_UNINIT;
 
+RbtSteering_Data RobotData = {ROBOT_DIR_FRWRD, 0};
+	
+uint8_t dataChangeFlag = DATA_NOT_CHANGED;
 /*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*/
 /*--*-*-*- FUNCTIONS IMPLEMENTATION -*-*-*-*-*-*/
 
@@ -41,7 +48,7 @@ uint8_t RobotModuleStatus_gu8 = ROBOT_STATUS_UNINIT;
 * Description: Function to Initialize the Robot module.
 *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*/
 /* Function to initialize the Robot module */
-Robot_Status_t RbtSteering_init(void)
+Std_ReturnType RbtSteering_init(void)
 {
 /**************************************************************************************/
 /*								Start of Error Checking								  */
@@ -49,7 +56,7 @@ Robot_Status_t RbtSteering_init(void)
 	/* Check if the Robot module is already initialized */
 	if(RobotModuleStatus_gu8 == ROBOT_STATUS_INIT)
 	{
-		return ROBOT_STATUS_INIT;
+		return E_OK;
 	}else{/*Nothing to here*/}
 		
 /**************************************************************************************/
@@ -60,13 +67,205 @@ Robot_Status_t RbtSteering_init(void)
 /**************************************************************************************/
 	/* Initialize the ROBOT Module */
 	if(Motor_init() != MOTOR_STATUS_ERROR_OK)
-		return ROBOT_STATUS_ERROR_NOK;
+	{
+		return E_NOT_OK;
+	}
 	
 	/* Change the state of the module to initialized */
 	RobotModuleStatus_gu8 = ROBOT_STATUS_INIT;
+	return E_OK;
+}
+
+
+
+/*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+* Service Name: RbtSteering_mainFunction
+* Sync/Async: Synchronous
+* Reentrancy: Non reentrant
+* Parameters (in): None
+* Parameters (inout): None
+* Parameters (out): None
+* Return value: Robot_Status_t - return the status of the function ERROR_OK or NOT_OK
+* Description: Main Function || Dispatcher of the Robot Steering Module.
+*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*/
+Std_ReturnType RbtSteering_mainFunction(void)
+{
+	if (DataChange_Flag == DATA_CHANGED)
+	{
+		DataChange_Flag = DATA_NOT_CHANGED;
+		if((Robot_Data_Input.RbtSpeed == 0) || (Robot_Data_Input.RbtDirection >= ROBOT_DIR_NEUTRAL))
+		{
+			RbtSteering_stop();
+		}else
+		{
+			RbtSteering_move(Robot_Data_Input.RbtDirection, Robot_Data_Input.RbtSpeed);
+		}
+	}else
+	{
+		
+	}
+	return E_OK;
+}
+
+
+/*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+* Service Name: RbtSteering_Dir_Spd_Setter
+* Sync/Async: Synchronous
+* Reentrancy: Non reentrant
+* Parameters (in): u8_speed - Speed of the robot in %
+*				   u8_direction - Direction of the robot (Forward - Backward - Left - Right)
+* Parameters (inout): None
+* Parameters (out): None
+* Return value: Robot_Status_t - return the status of the function ERROR_OK or NOT_OK
+* Description: Function to Set the data of the Robot in the global shared variable.
+*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*/
+Std_ReturnType RbtSteering_Dir_Spd_Setter(RobotDir_t u8_direction, RobotSpeed_t u8_speed)
+{
+	DataChange_Flag = DATA_CHANGED;
+	Robot_Data_Input.RbtDirection = u8_direction;
+	Robot_Data_Input.RbtSpeed = u8_speed;
+	
+	return E_OK;
+}
+
+
+/*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+* Service Name: RbtSteering_Dir_Spd_Getter
+* Sync/Async: Synchronous
+* Reentrancy: Non reentrant
+* Parameters (in): pu8_speed - pointer to Speed of the robot in %
+*				   pu8_direction - pointer to Direction of the robot (Forward - Backward - Left - Right)
+* Parameters (inout): None
+* Parameters (out): None
+* Return value: Robot_Status_t - return the status of the function ERROR_OK or NOT_OK
+* Description: Function to Get the data of the Robot from the global shared variable.
+*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*/
+Std_ReturnType RbtSteering_Dir_Spd_Getter(RobotDir_t *pu8_direction, RobotSpeed_t *pu8_speed)
+{
+	*pu8_direction = Robot_Data_Input.RbtDirection;
+	*pu8_speed = Robot_Data_Input.RbtSpeed;
+	
+	return E_OK;
+}
+
+/*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+* Service Name: RbtSteering_setData
+* Sync/Async: Synchronous
+* Reentrancy: Non reentrant
+* Parameters (in): u8_speed - Speed of the robot in %
+*				   u8_direction - Direction of the robot (Forward - Backward - Left - Right)
+* Parameters (inout): None
+* Parameters (out): None
+* Return value: Robot_Status_t - return the status of the function ERROR_OK or NOT_OK
+* Description: Setter function to set the data used by the dispatcher of the Module
+*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*/
+/* Function to move the Robot forward with given speed in % */
+Robot_Status_t RbtSteering_setData(RobotDir_t u8_direction, RobotSpeed_t u8_speed)
+{
+/**************************************************************************************/
+/*								Start of Error Checking								  */
+/**************************************************************************************/
+	/* Check if the ROBOT module is not initialized */
+	if(RobotModuleStatus_gu8 != ROBOT_STATUS_INIT)
+	{
+		return E_NOT_OK;
+	}else{/*Nothing to here*/}
+		
+	/* Check if the speed is out of range */
+	if (100 < u8_speed)
+	{
+		return E_NOT_OK;
+	}else{/*Nothing to here*/}
+			
+	/* Check if the Robot direction is invalid */
+	if (ROBOT_DIR_INVALID <= u8_direction)
+	{
+		return E_NOT_OK;
+	}else{/*Nothing to here*/}
+/**************************************************************************************/
+/*								End of Error Checking								  */
+/**************************************************************************************/
+
+/**************************************************************************************/
+/*								Function Implementation								  */
+/**************************************************************************************/				
+	
+	/* Set the data change flag to Changed */
+	dataChangeFlag = DATA_CHANGED;
+	/* Set the global struct variable with the new direction */
+	RobotData.Direction = u8_direction;
+	/* Set the global struct variable with the new speed */
+	RobotData.Speed = u8_speed;
+	
 	return ROBOT_STATUS_ERROR_OK;
 }
 
+
+Robot_Status_t RbtSteering_getData(RobotDir_t *pu8_direction, RobotSpeed_t *pu8_speed)
+{
+/**************************************************************************************/
+/*								Start of Error Checking								  */
+/**************************************************************************************/
+	/* Check if the ROBOT module is not initialized */
+	if(RobotModuleStatus_gu8 != ROBOT_STATUS_INIT)
+	{
+		return ROBOT_STATUS_UNINIT;
+	}else{/*Nothing to here*/}
+		
+	/* Check if the input pointer is NULL Pointers */
+	if ((NULL_PTR == pu8_speed) || (NULL_PTR == pu8_direction))
+	{
+		return ROBOT_STATUS_ERROR_NOK;
+	}else{/*Nothing to here*/}
+/**************************************************************************************/
+/*								End of Error Checking								  */
+/**************************************************************************************/
+
+/**************************************************************************************/
+/*								Function Implementation								  */
+/**************************************************************************************/
+				
+	/* Set the global struct variable with the new direction */
+	*pu8_direction = RobotData.Direction;
+	/* Set the global struct variable with the new speed */
+	*pu8_speed = RobotData.Speed;
+				
+	return ROBOT_STATUS_ERROR_OK;
+}
+
+
+
+/*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+* Service Name: RbtSteering_mainFunction
+* Sync/Async: Synchronous
+* Reentrancy: Non reentrant
+* Parameters (in): None
+* Parameters (inout): None
+* Parameters (out): None
+* Return value: Robot_Status_t - return the status of the function ERROR_OK or NOT_OK
+* Description: Periodic Function - Dispatcher.
+*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*/
+Robot_Status_t RbtSteering_mainFunction(void)
+{
+	/* Check if the data changed */
+	if(dataChangeFlag == DATA_CHANGED)
+	{
+		if(RobotData.Speed == 0) /* If speed equals to zero -> Stop the Robot */
+		{
+			RbtSteering_stop();
+		}
+		else
+		{ /* Set the Robot movement to the new changed direction or speed */
+			RbtSteering_move(RobotData.Direction, RobotData.Speed);
+		}
+		/* Set the data change flag to not changed */
+		dataChangeFlag = DATA_NOT_CHANGED;
+	}
+	else
+	{
+	}
+	return ROBOT_STATUS_ERROR_OK;
+}
 
 /*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 * Service Name: RbtSteering_move
@@ -85,24 +284,6 @@ Robot_Status_t RbtSteering_move(RobotDir_t u8_direction, RobotSpeed_t u8_speed)
 /**************************************************************************************/
 /*								Start of Error Checking								  */
 /**************************************************************************************/
-	/* Check if the ROBOT module is not initialized */
-	if(RobotModuleStatus_gu8 != ROBOT_STATUS_INIT)
-	{
-		return ROBOT_STATUS_UNINIT;
-	}else{/*Nothing to here*/}
-		
-	/* Check if the speed is out of range */
-	if (100 < u8_speed)
-	{
-		return ROBOT_STATUS_ERROR_SPD_INVALID;
-	}else{/*Nothing to here*/}
-		
-	/* Check if the Robot direction is invalid */
-	if (ROBOT_DIR_INVALID <= u8_direction)
-	{
-		return ROBOT_STATUS_ERROR_DIR_INVALID;
-	}else{/*Nothing to here*/}
-	
 	/* Check if the Robot is already running */
 	if(RobotState_gau8 == ROBOT_RUNNING)		
 	{
@@ -119,7 +300,7 @@ Robot_Status_t RbtSteering_move(RobotDir_t u8_direction, RobotSpeed_t u8_speed)
 	if(u8_speed == 0) 
 	{
 		RbtSteering_stop();
-		return ROBOT_STATUS_ERROR_OK;
+		return E_OK;
 	}
 	switch (u8_direction)
 	{	/* If the give Direction is Forward */
@@ -167,7 +348,7 @@ Robot_Status_t RbtSteering_move(RobotDir_t u8_direction, RobotSpeed_t u8_speed)
 	/* Change the state of the Motor to Running */
 	RobotState_gau8 = ROBOT_RUNNING;
 	
-	return MOTOR_STATUS_ERROR_OK;
+	return E_OK;
 }
 
 
@@ -182,7 +363,7 @@ Robot_Status_t RbtSteering_move(RobotDir_t u8_direction, RobotSpeed_t u8_speed)
 * Description: Function to Stop the Robot.
 *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*/
 /* Function to stop robot */
-Robot_Status_t RbtSteering_stop()
+Std_ReturnType RbtSteering_stop()
 {
 /**************************************************************************************/
 /*								Start of Error Checking								  */
@@ -190,7 +371,7 @@ Robot_Status_t RbtSteering_stop()
 	/* Check if the motor index is invalid */
 	if (ROBOT_STOPPED == RobotModuleStatus_gu8)
 	{
-		return ROBOT_STATUS_ERROR_STOPPED;
+		return E_OK;
 	}else{/*Nothing to here*/}
 				
 /**************************************************************************************/
@@ -205,5 +386,5 @@ Robot_Status_t RbtSteering_stop()
 	Motor_stop(RbtSteering_Configuratons.Rbt_rightMotorID);
 	/* Change the state of the Robot to Stopped */
 	RobotState_gau8 = ROBOT_STOPPED;
-	return MOTOR_STATUS_ERROR_OK;
+	return E_OK;
 }
