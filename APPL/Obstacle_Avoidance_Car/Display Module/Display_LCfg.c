@@ -10,8 +10,7 @@
 /*
  * Array of Displays, 
  */
-str_DisplayDevicesData_t Displays[DISPLAY_USED_NUM] =
-{    /* DISPLAY ID */  /* x axis */  /* y axis */   /* integer */	/* string */
-	{ LCD_ID_0,			  1 ,			  1 ,			 0 ,	       "\0"	 }
+const Displays_List_t Displays[DISPLAY_USED_NUM] =
+{
+	LCD_ID_0
 };	
-
