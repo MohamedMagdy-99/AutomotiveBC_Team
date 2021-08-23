@@ -24,8 +24,7 @@
 #define ROBOT_DIR_BKWRD				1U
 #define ROBOT_DIR_LEFT				2U
 #define ROBOT_DIR_RIGHT				3U
-#define ROBOT_DIR_NEUTRAL			4U
-#define ROBOT_DIR_INVALID			5U
+#define ROBOT_DIR_INVALID			4U
 
 
 /*******************************************************************************
@@ -46,21 +45,6 @@ typedef uint8_t RobotDir_t;
  * Data Type for Robot Speed
  */
 typedef uint8_t RobotSpeed_t;
-
-typedef struct
-{
-	RobotDir_t	Direction;
-	RobotSpeed_t Speed;
-}RbtSteering_Data;
-
-/*
- * Data Type for Module's Input
- */
-typedef struct
-{
-	RobotDir_t	RbtDirection;
-	RobotSpeed_t  RbtSpeed;
-}Rbt_DataInput_t;
 
 /*
  * Data Type for Robot return status
@@ -98,14 +82,6 @@ Robot_Status_t RbtSteering_move(RobotDir_t u8_direction, RobotSpeed_t u8_speed);
 /* Function to stop Robot */
 Robot_Status_t RbtSteering_stop(void);
 
-/* Periodic Function || Dispatcher of the Robot Steering Module */
-Robot_Status_t RbtSteering_mainFunction(void);
-
-/* Robot Steering Module Setter */
-Robot_Status_t RbtSteering_setData(RobotDir_t u8_direction, RobotSpeed_t u8_speed);
-
-/* Robot Steering Module Getter */
-Robot_Status_t RbtSteering_getData(RobotDir_t *pu8_direction, RobotSpeed_t *pu8_speed);
 /*******************************************************************************
  *                       External Variables                                    *
  *******************************************************************************/
