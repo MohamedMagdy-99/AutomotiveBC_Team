@@ -42,7 +42,7 @@ Std_ReturnType Sensing_init(void);
 Std_ReturnType Sensing_getReading(uint8_t SensorID_u8, uint16_t *Sensor_Value);
 
 /*  Sensing module main function */
-Std_ReturnType Sensing_mainFunction(void);
+Std_ReturnType Sensing_mainFunction(void * pv_param);
 /*******************************************************************************
  *                       External Variables                                    *
  *******************************************************************************/

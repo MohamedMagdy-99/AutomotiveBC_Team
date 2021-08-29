@@ -14,7 +14,6 @@
 /*-*-*-*-*- INCLUDES *-*-*-*-*-*/
 #include "../Robot Steering Module/Rbt_Steering.h"
 #include "../Sensing Module/Sensing.h"
-#include "../Display Module/Display.h"
 
 /*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*/
 /*-*-*-*-*- CONSTANTS -*-*-*-*-*-*/
@@ -44,6 +43,6 @@ typedef uint8_t ModuleState_t;
 Std_ReturnType ObstacleAvoidance_init(void);
 
 /* Periodic Function of the Obstacle Avoidance Module */
-Std_ReturnType ObstacleAvoidance_mainFunction(void);
+Std_ReturnType ObstacleAvoidance_mainFunction(void * pv_param);
 
 #endif /* OBSTCL_AVD_RBT_H_ */

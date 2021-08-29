@@ -133,7 +133,7 @@ Std_ReturnType Sensing_getReading(uint8_t SensorID_u8, uint16_t *Sensor_Value)
 * Return value: None
 * Description: It is the sensing module main function that called by APP 
 *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*/
-Std_ReturnType Sensing_mainFunction(void)
+Std_ReturnType Sensing_mainFunction(void * pv_param)
 {
 	uint8_t u8_Counter=0;
 	for(u8_Counter=0;u8_Counter<SENSORS_USED_NUM;u8_Counter++)

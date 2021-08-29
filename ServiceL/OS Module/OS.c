@@ -75,6 +75,7 @@ STATIC Std_ReturnType OS_CpuLoadHandler(void);
 /* OS idle task */
 STATIC Std_ReturnType OS_IdleTask(void);
 
+uint8_t gu8_loopCounter = Initial_Value;
 /*- LOCAL FUNCTIONS IMPLEMENTATION
 ------------------------*/
 /*****************************************************************************************
@@ -156,18 +157,17 @@ STATIC Std_ReturnType OS_Scheduler(void)
 				if(OS_TaskWillRunFlag == TRUE)
 				{
 					/* compare the priority of ready tasks */
-					uint8_t u8_loopCounter = Initial_Value;
 					uint8_t maxPrioirtyTemp = MAX_PRIOIRTY;
-					for(u8_loopCounter = Initial_Value; u8_loopCounter < CreatedTasksCount; u8_loopCounter++)
+					for(gu8_loopCounter = Initial_Value; gu8_loopCounter < CreatedTasksCount; gu8_loopCounter++)
 					{
-						if(TasksCurrentState[u8_loopCounter] == READY)
+						if(TasksCurrentState[gu8_loopCounter] == READY)
 						{
-							if(Tasks_Priority[u8_loopCounter] <= maxPrioirtyTemp)
+							if(Tasks_Priority[gu8_loopCounter] < maxPrioirtyTemp)
 							{
 								/* update new max prio */
-								maxPrioirtyTemp = Tasks_Priority[u8_loopCounter];
+								maxPrioirtyTemp = Tasks_Priority[gu8_loopCounter];
 								/* update current task index to be running */
-								CurrentlyRunningTaskIndex = u8_loopCounter;
+								CurrentlyRunningTaskIndex = gu8_loopCounter;
 							}
 						}
 					}
