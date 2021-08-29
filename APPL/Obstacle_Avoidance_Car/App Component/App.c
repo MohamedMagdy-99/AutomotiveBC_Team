@@ -131,8 +131,6 @@ Std_ReturnType App_update(void)
 	/* Calling the Main function of the Robot Steering Module */
 	RbtSteering_mainFunction();
 	
-	/* Calling the Main function of the Display Module */
-	Display_mainFunction();
 /*******************************************************************************/
 /*******************************************************************************/
 
