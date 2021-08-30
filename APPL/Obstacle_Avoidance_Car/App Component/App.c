@@ -34,7 +34,7 @@ Std_ReturnType App_start(void)
 		return E_NOT_OK;
 	
 	
-	TaskId_t ObstclTask_ID=0, SensingTask_ID=0, Robot_ID=0;
+	OS_TaskId_t ObstclTask_ID=0, SensingTask_ID=0, Robot_ID=0;
 	
 	OS_TaskCreate(&SensingTask_ID,	2,	5,	Sensing_mainFunction,			NULL_PTR);
 	OS_TaskCreate(&ObstclTask_ID,	1,	7,	ObstacleAvoidance_mainFunction, NULL_PTR);

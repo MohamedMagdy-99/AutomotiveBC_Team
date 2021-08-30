@@ -12,8 +12,8 @@
 
 /*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*/
 /*-*-*-*-*- INCLUDES *-*-*-*-*-*/
-#include "../Robot Steering Module/Rbt_Steering.h"
-#include "../Sensing Module/Sensing.h"
+#include "Rbt_Steering.h"
+#include "Sensing.h"
 
 /*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*/
 /*-*-*-*-*- CONSTANTS -*-*-*-*-*-*/

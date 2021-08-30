@@ -6,7 +6,7 @@
  */ 
 
 
-#include "App Component/App.h"
+#include "App.h"
 
 int main(void)
 {

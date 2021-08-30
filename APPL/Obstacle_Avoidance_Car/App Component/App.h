@@ -12,7 +12,7 @@
 
 /*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*/
 /*-*-*-*-*- INCLUDES *-*-*-*-*-*/
-#include "../Obstacle Avoidance Robot/Obstcl_Avd_Rbt.h"
+#include "Obstcl_Avd_Rbt.h"
 #include "ServiceL/OS Module/OS.h"
 /*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*/
 /*-*-*-*-*- CONSTANTS -*-*-*-*-*-*/

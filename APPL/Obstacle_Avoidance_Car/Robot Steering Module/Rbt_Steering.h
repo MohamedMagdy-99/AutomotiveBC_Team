@@ -11,7 +11,7 @@
 
 /*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*/
 /*-*-*-*-*- INCLUDES *-*-*-*-*-*/
-#include "../../../ECUAL/Motor Module/Motor.h"
+#include "ECUAL/Motor Module/Motor.h"
 #include "Rbt_Steering_Cfg.h"
 
 /*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*/

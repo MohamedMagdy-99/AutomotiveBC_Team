@@ -8,7 +8,7 @@
 /*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*/
 /*-*-*-*-*- INCLUDES *-*-*-*-*-*/
 #include "Rbt_Steering.h"
-#include "..\..\..\Microcontroller\Delay Module\Delay.h"
+#include "Microcontroller\Delay Module\Delay.h"
 
 /*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*/
 /*-*-*-*-*- CONSTANTS -*-*-*-*-*-*/

@@ -17,21 +17,21 @@
 /*- Primitive Types
 -------------------------------*/
 /* void pointer to parameters to be passed to the task */
-typedef void*    TaskParameters_t;
+typedef void*    OS_TaskParameters_t;
 /* task unique id */
-typedef uint8_t  TaskId_t;
+typedef uint8_t  OS_TaskId_t;
 /* task unique priority */
-typedef uint8_t  TaskPriority_t;
+typedef uint8_t  OS_TaskPriority_t;
 /* task periodicity in sys ticks */
-typedef uint16_t TaskPeriodicityTicks_t;
+typedef uint16_t OS_TaskPeriodicityTicks_t;
 /* master sys tick monitor like a clock */
 typedef volatile uint32_t OS_SysTicks_t;
 /* index for tasks array */
-typedef uint8_t TaskIndex_t;
+typedef uint8_t OS_TaskIndex_t;
 /* pointer to function representing the task which can take input parameter */
-typedef Std_ReturnType (*ptrTask_t) (TaskParameters_t);
+typedef Std_ReturnType (*ptrTask_t) (OS_TaskParameters_t);
 /* current number of tasks created in system */
-typedef uint8_t CreatedTasksCount_t;
+typedef uint8_t OS_CreatedTasksCount_t;
 /* OS tick flag */
 typedef volatile boolean OS_NewTickFlag_t;
 
@@ -63,8 +63,10 @@ typedef OS_SysTicks_t OS_IdleTaskDuration_t;
 typedef struct
 {
 	ptrTask_t TaskPointer;
-	TaskParameters_t Parameters;
-	TaskPeriodicityTicks_t Periodicity;
+	OS_TaskParameters_t Parameters;
+	OS_TaskPeriodicityTicks_t Periodicity;
+	OS_TaskPriority_t Priority;
+	OS_TaskId_t Id;
 	
 }strTasksCreationData_t;
 
@@ -81,16 +83,16 @@ typedef enum
 /*- Function Declarations
 -------------------------------*/
 /* task creation */
-Std_ReturnType OS_TaskCreate(TaskId_t* Id, TaskPriority_t Priority, TaskPeriodicityTicks_t Periodicity, 
-							 ptrTask_t TaskPointer, TaskParameters_t Parameters);
+Std_ReturnType OS_TaskCreate(OS_TaskId_t* Id, OS_TaskPriority_t Priority, OS_TaskPeriodicityTicks_t Periodicity, 
+							 ptrTask_t TaskPointer, OS_TaskParameters_t Parameters);
 /* task lock */							 
-Std_ReturnType OS_TaskSuspend(TaskId_t Id);
+Std_ReturnType OS_TaskSuspend(OS_TaskId_t Id);
 /* task resume */
-Std_ReturnType OS_TaskResume(TaskId_t Id);
+Std_ReturnType OS_TaskResume(OS_TaskId_t Id);
 /* set task's prio */
-Std_ReturnType OS_SetPriority(TaskId_t Id, TaskPriority_t Priority);
+Std_ReturnType OS_SetPriority(OS_TaskId_t Id, OS_TaskPriority_t Priority);
 /*set task's periodicity */
-Std_ReturnType OS_SetPeriodicity(TaskId_t Id, TaskPeriodicityTicks_t Periodicity);
+Std_ReturnType OS_SetPeriodicity(OS_TaskId_t Id, OS_TaskPeriodicityTicks_t Periodicity);
 /* start system */
 Std_ReturnType OS_Start(void);
 /* OS init */
