@@ -61,7 +61,7 @@ Std_ReturnType ObstacleAvoidance_init(void)
 * Return value: Std_ReturnType - return the status of the function E_OK or E_NOT_OK
 * Description: Periodic function/task of the module.
 *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*/
-Std_ReturnType ObstacleAvoidance_mainFunction(void)
+Std_ReturnType ObstacleAvoidance_mainFunction(void * pv_param)
 {
 /**************************************************************************************/
 /*								Start of Error Checking								  */
@@ -122,8 +122,6 @@ Std_ReturnType ObstacleAvoidance_mainFunction(void)
 	}
 	
 	
-	
-
 /*******************************************************************************/
 /*******************************************************************************/
 

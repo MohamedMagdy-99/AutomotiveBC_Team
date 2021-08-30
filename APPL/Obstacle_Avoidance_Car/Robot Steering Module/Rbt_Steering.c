@@ -174,7 +174,7 @@ Robot_Status_t RbtSteering_getData(RobotDir_t *pu8_direction, RobotSpeed_t *pu8_
 * Return value: Robot_Status_t - return the status of the function ERROR_OK or NOT_OK
 * Description: Periodic Function - Dispatcher.
 *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*/
-Robot_Status_t RbtSteering_mainFunction(void)
+Robot_Status_t RbtSteering_mainFunction(void * pv_param)
 {
 	/* Check if the data changed */
 	if(dataChangeFlag == DATA_CHANGED)
