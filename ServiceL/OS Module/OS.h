@@ -14,6 +14,7 @@
 #include "Common_Macros.h"
 #include "Gpt.h"
 #include "OS_Cfg.h"
+#include "PowerModes.h"
 /*- Primitive Types
 -------------------------------*/
 /* void pointer to parameters to be passed to the task */

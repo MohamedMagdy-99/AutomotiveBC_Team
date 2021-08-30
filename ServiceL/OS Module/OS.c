@@ -172,7 +172,7 @@ STATIC Std_ReturnType OS_Scheduler(void)
 					/* reset tick flag */
 					OS_NewTickFlag = FALSE;
 					
-					/* no task needs to run in this ticks, system is idle */
+					/* no task needs to run in this tick, system is idle */
 					OS_IdleTask();
 				}		
 			}
@@ -189,6 +189,9 @@ STATIC Std_ReturnType OS_Scheduler(void)
 ******************************************************************************************/
 STATIC void OS_CallBack(void)
 {
+	/* turn off low power mode */
+	LPM_DisableLowPowerMode();
+	
 	/* update sys tick */
 	Sys_CurrentTime++;
 	
@@ -307,7 +310,12 @@ STATIC Std_ReturnType OS_IdleTask(void)
 {
 
 	OS_IdleTaskDuration++;
-
+	
+	while(OS_NewTickFlag == FALSE)
+	{
+		LPM_EnterLowPowerMode(IDLE_MODE);
+	}
+	
 	return E_OK;
 }
 
