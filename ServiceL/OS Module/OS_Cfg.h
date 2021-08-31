@@ -29,5 +29,5 @@
  #define TIMER_ID						TIMER_CHANNEL_0_ID
  
  /* low power mode */
- #define CPU_SLEEP_MODE						IDLE_MODE;
+ #define CPU_SLEEP_MODE						IDLE_MODE
 #endif /* OS_CFG_H_ */
