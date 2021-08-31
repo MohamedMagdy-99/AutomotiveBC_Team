@@ -313,7 +313,7 @@ STATIC Std_ReturnType OS_IdleTask(void)
 	
 	while(OS_NewTickFlag == FALSE)
 	{
-		LPM_EnterLowPowerMode(IDLE_MODE);
+		LPM_EnterLowPowerMode(CPU_SLEEP_MODE);
 	}
 	
 	return E_OK;
