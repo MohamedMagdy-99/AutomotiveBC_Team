@@ -8,7 +8,7 @@
 /*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*/
 /*-*-*-*-*- INCLUDES *-*-*-*-*-*/
 #include "Dio.h"
-#include "..\..\Microcontroller\Atmega32 Registers\Dio_regs.h"
+#include "Dio_regs.h"
 #include "Dio_LCfg.h"
 
 
@@ -217,6 +217,74 @@ enuDio_Status_t Dio_readPin(uint8_t u8_pinID, uint8_t *pu8_pinValue)
 		break;
 		default:
 		return DIO_STATUS_PORT_NUM_INVALID;
+	}
+	return DIO_STATUS_ERROR_OK;
+}
+
+/*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+* Service Name: Dio_changePinDirection
+* Sync/Async: Synchronous
+* Reentrancy: Non Reentrant
+* Parameters (in): u8_pinID - Index to the pin in the configurations array of structures
+*				   u8_pinDirection - New Direction of the Pin
+*				   u8_pinInitialState - Initial State of the pin
+* Parameters (inout): None
+* Parameters (out): None
+* Return value: enuDio_Status_t - return the status of the function ERROR_OK or NOT_OK
+* Description: Function to change the direction of the pin.
+*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*/
+enuDio_Status_t Dio_changePinDirection(uint8_t u8_pinID, enuDio_Direction_t u8_pinDirection, uint8_t u8_pinInitialState)
+{
+	/*-* Check if the pinID is out of configured range *-*/
+	if(u8_pinID > DIO_USED_PINS_NUM)
+	{
+		return DIO_STATUS_PIN_ID_INVALID;
+	}
+	/*-* Check if the module is not initialized *-*/
+	if(u8_Dio_Status == DIO_NOT_INITIALIZED)
+	{
+		return DIO_STATUS_NOT_INIT;
+	}
+	strDio_pins[u8_pinID].u8_Direction = u8_pinDirection;
+	strDio_pins[u8_pinID].u8_InitState = u8_pinInitialState;
+	switch (pstrDio_pinsConfig[u8_pinID].u8_PortNum)
+	{
+		case PORT_A:
+		{
+			DIO_PORTA_DIR &= ~(1<<(strDio_pins[u8_pinID].u8_PinNum));
+			DIO_PORTA_DIR |= u8_pinDirection<<(strDio_pins[u8_pinID].u8_PinNum);
+			DIO_PORTA_DATA &= ~(1<<(strDio_pins[u8_pinID].u8_PinNum));
+			DIO_PORTA_DATA |= u8_pinInitialState<<(strDio_pins[u8_pinID].u8_PinNum);
+			break;
+		}
+		case PORT_B:
+		{
+			DIO_PORTB_DIR &= ~(1<<(strDio_pins[u8_pinID].u8_PinNum));
+			DIO_PORTB_DIR |= u8_pinDirection<<(strDio_pins[u8_pinID].u8_PinNum);
+			DIO_PORTB_DATA &= ~(1<<(strDio_pins[u8_pinID].u8_PinNum));
+			DIO_PORTB_DATA |= u8_pinInitialState<<(strDio_pins[u8_pinID].u8_PinNum);
+			break;
+		}
+		case PORT_C:
+		{
+			DIO_PORTC_DIR &= ~(1<<(strDio_pins[u8_pinID].u8_PinNum));
+			DIO_PORTC_DIR |= u8_pinDirection<<(strDio_pins[u8_pinID].u8_PinNum);
+			DIO_PORTC_DATA &= ~(1<<(strDio_pins[u8_pinID].u8_PinNum));
+			DIO_PORTC_DATA |= u8_pinInitialState<<(strDio_pins[u8_pinID].u8_PinNum);
+			break;
+		}
+		case PORT_D:
+		{
+			DIO_PORTD_DIR &= ~(1<<(strDio_pins[u8_pinID].u8_PinNum));
+			DIO_PORTD_DIR |= u8_pinDirection<<(strDio_pins[u8_pinID].u8_PinNum);
+			DIO_PORTD_DATA &= ~(1<<(strDio_pins[u8_pinID].u8_PinNum));
+			DIO_PORTD_DATA |= u8_pinInitialState<<(strDio_pins[u8_pinID].u8_PinNum);
+			break;
+		}
+		default:
+		{
+			return DIO_STATUS_PORT_NUM_INVALID;
+		}
 	}
 	return DIO_STATUS_ERROR_OK;
 }

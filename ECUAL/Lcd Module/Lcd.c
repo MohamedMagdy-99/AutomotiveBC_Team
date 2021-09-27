@@ -10,6 +10,12 @@
 ----------------------------------------------*/
 #include "Lcd.h"
 
+/*- INCLUDES
+----------------------------------------------*/
+#define LEFT		(0x00U)
+#define RIGHT		(0x01U)
+
+
 /*- GLOBAL EXTERN VARIABLES
 -------------------------------*/
 enuLcd_Status_t Lcd_Status = LCD_STATUS_ERROR_OK;
@@ -51,10 +57,12 @@ uint8_t gu8_currentlyRunningCommand = LCD_INIT_4BITS_COMMAND_1_ID;
 uint8_t gau8_oneTimeString_1[11] = "Distance:";
 
 uint8_t gu8_oneTimeString_1_Flag = FALSE;
-
-
 #endif
 
+#if (AsyncMode == FALSE)
+uint8_t gau8_currentStringR1[Lcd_Columns] = "DEFAULT1";
+uint8_t gau8_currentStringR2[Lcd_Columns] = "DEFAULT2";
+#endif
 /*- LOCAL FUNCTIONS IMPLEMENTATION
 ------------------------*/
 
@@ -150,6 +158,124 @@ enuLcd_Status_t Lcd_sendVariableInt(uint16_t u16_number, uint8_t u8_base)
 	
 	Lcd_sendString(pu8_String);
 	
+	return LCD_STATUS_ERROR_OK;
+}
+
+enuLcd_Status_t Lcd_pingPongStringR1(uint8_t* au8_string, uint8_t u8_numChars)
+{
+	STATIC uint8_t columnPosition_R = 1;
+	STATIC uint8_t columnPosition_L = 1;
+	STATIC uint8_t u8_RightLeftShiftFlag = RIGHT;
+	
+	if(stringCmp((uint8_t*)"DEFAULT", gau8_currentStringR1) == TRUE)
+	{
+		stringCopy(au8_string, gau8_currentStringR1);
+	}
+	else
+	{
+		if(stringCmp(au8_string, gau8_currentStringR1) == FALSE)
+		{
+			/* reset fun parameters */
+		   EmptyString(gau8_currentStringR1);
+		   stringCopy(au8_string, gau8_currentStringR1);
+		   columnPosition_R = 1;
+		   columnPosition_L = 1;
+		   u8_RightLeftShiftFlag = RIGHT;
+		   Lcd_cursorPosition(1, 1);
+		   Lcd_sendString((uint8_t*)"                ");
+			
+		}
+	}
+	
+	
+	if(u8_RightLeftShiftFlag == RIGHT)
+	{
+
+		Lcd_cursorPosition(1, columnPosition_R-1);
+		Lcd_sendCharacter(' ');
+		Lcd_cursorPosition(1, columnPosition_R);
+		Lcd_sendString(gau8_currentStringR1);
+		if(columnPosition_R == (Lcd_Columns-u8_numChars)+1)
+		{
+			columnPosition_L = (Lcd_Columns-u8_numChars);
+			u8_RightLeftShiftFlag = LEFT;	
+		}
+		columnPosition_R++;
+		//Delay_ms(R1_PINGPONG_MS);		
+	}
+	else if(u8_RightLeftShiftFlag == LEFT)
+	{
+
+		Lcd_cursorPosition(1, columnPosition_L);
+		Lcd_sendString(gau8_currentStringR1);
+		Lcd_sendCharacter(' ');
+		if(columnPosition_L == 1)
+		{
+			columnPosition_R = 1;
+			u8_RightLeftShiftFlag = RIGHT;	
+		}
+		columnPosition_L--;
+		//Delay_ms(R1_PINGPONG_MS);		
+	}
+	return LCD_STATUS_ERROR_OK;
+}
+
+enuLcd_Status_t Lcd_pingPongStringR2(uint8_t* au8_string, uint8_t u8_numChars)
+{
+	STATIC uint8_t columnPosition_R = 1;
+	STATIC uint8_t columnPosition_L = 1;
+	STATIC uint8_t u8_RightLeftShiftFlag = RIGHT;
+	
+	if(stringCmp((uint8_t*)"DEFAULT", gau8_currentStringR2) == TRUE)
+	{
+		stringCopy(au8_string, gau8_currentStringR2);
+	}
+	else
+	{
+		if(stringCmp(au8_string, gau8_currentStringR2) == FALSE)
+		{
+			/* reset fun parameters */
+			EmptyString(gau8_currentStringR2);
+			stringCopy(au8_string, gau8_currentStringR2);
+			columnPosition_R = 1;
+			columnPosition_L = 1;
+			u8_RightLeftShiftFlag = RIGHT;
+			Lcd_cursorPosition(2, 1);
+			Lcd_sendString((uint8_t*)"                ");
+			
+		}
+	}
+	
+	
+	if(u8_RightLeftShiftFlag == RIGHT)
+	{
+
+		Lcd_cursorPosition(2, columnPosition_R-1);
+		Lcd_sendCharacter(' ');
+		Lcd_cursorPosition(2, columnPosition_R);
+		Lcd_sendString(gau8_currentStringR2);
+		if(columnPosition_R == (Lcd_Columns-u8_numChars)+1)
+		{
+			columnPosition_L = (Lcd_Columns-u8_numChars);
+			u8_RightLeftShiftFlag = LEFT;
+		}
+		columnPosition_R++;
+		Delay_ms(R2_PINGPONG_MS);
+	}
+	else if(u8_RightLeftShiftFlag == LEFT)
+	{
+
+		Lcd_cursorPosition(2, columnPosition_L);
+		Lcd_sendString(gau8_currentStringR2);
+		Lcd_sendCharacter(' ');
+		if(columnPosition_L == 1)
+		{
+			columnPosition_R = 1;
+			u8_RightLeftShiftFlag = RIGHT;
+		}
+		columnPosition_L--;
+		Delay_ms(R2_PINGPONG_MS);
+	}
 	return LCD_STATUS_ERROR_OK;
 }
 #endif
@@ -521,7 +647,7 @@ enuLcd_Status_t Lcd_sendCommand(uint8_t u8_command)
 	return LCD_STATUS_ERROR_OK;
 }
 
-void LcdDelayFinished(void)
+void LcdDelayFinished(uint8_t Id)
 {
 	if(Lcd_Init == LCD_NOT_INITIALIZED)
 	{
@@ -561,7 +687,7 @@ void LcdDelayFinished(void)
 
 }
 
-void LcdPoweringUpFinished(void)
+void LcdPoweringUpFinished(uint8_t Id)
 {
 	Lcd_PoweringUp_Flag = TRUE;
 }
@@ -675,7 +801,6 @@ enuLcd_Status_t Lcd_sendHigherNibble(uint8_t u8_data)
 	
 	return LCD_STATUS_ERROR_OK;
 }
-
 
 
 

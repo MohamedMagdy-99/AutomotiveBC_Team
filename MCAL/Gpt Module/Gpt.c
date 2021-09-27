@@ -9,7 +9,8 @@
 /*- INCLUDES
 ----------------------------------------------*/
 #include "Gpt.h"
-#include "../../Microcontroller/Atmega32 Registers/Gpt_Regs.h"
+#include "Gpt_Regs.h"
+#include "Common_Macros.h"
 
 #define GPT_CHANNELS			3
 /* it will be used to stop the timer1 if it started and didn't stop till reach this value */
@@ -28,6 +29,15 @@ static uint32_t gu32_T1_OVF_TICKS =0;
 
 enuGpt_Status_t Gpt_Status[GPT_CHANNELS] = {GPT_STATUS_ERROR_NOK};
 enuGpt_initStatus_t Gpt_Init = GPT_NOT_INITIALIZED;
+
+void Gpt_T0Ovf_ISR(uint8_t Int_ID);
+void Gpt_T1Ovf_ISR(uint8_t Int_ID);
+void Gpt_T2Ovf_ISR(uint8_t Int_ID);
+void Gpt_T1OvfCounter_ISR(uint8_t Int_ID);
+
+
+
+
 
 /*- LOCAL FUNCTIONS IMPLEMENTATION
 ------------------------*/
@@ -732,7 +742,6 @@ case(TIMER_1):
 ******************************************************************************************/
 enuGpt_Status_t GptStart_aSync(uint8_t ChannelId, uint32_t u32_Ticks, pfGpt_CallBack_t FunToBeCalledInISR)
 {
-
 	switch(strGpt_Channels[ChannelId].u8_TimerNumber)
 	{
 		case(TIMER_0):
@@ -742,7 +751,11 @@ enuGpt_Status_t GptStart_aSync(uint8_t ChannelId, uint32_t u32_Ticks, pfGpt_Call
 				return GPT_STATUS_ALREADY_RUNNING;
 			}
 			Gpt_Status[TIMER_0] = GPT_STATUS_ALREADY_RUNNING;
+			
+			Interrupt_install(TIMER0_OVF_IRQ, Gpt_T0Ovf_ISR);
+			
 			T0ovfCallback = FunToBeCalledInISR;
+			
 			if((u32_Ticks <= TIMER_0_MAX_TICKS) && (u32_Ticks != 0))
 			{
 				/* set ticks */
@@ -817,7 +830,7 @@ enuGpt_Status_t GptStart_aSync(uint8_t ChannelId, uint32_t u32_Ticks, pfGpt_Call
 				f32_TempValue -= gu32_T0_OvfCounts;
 				uint32_t u32_CountRemanider = f32_TempValue * TIMER_0_MAX_TICKS;
 						
-				TCNT0_R = u32_CountRemanider;
+				TCNT0_R = TIMER_0_MAX_TICKS - u32_CountRemanider;
 						
 				/* set to prescaler */
 				switch(strGpt_Channels[ChannelId].u8_Prescaler)
@@ -879,7 +892,11 @@ enuGpt_Status_t GptStart_aSync(uint8_t ChannelId, uint32_t u32_Ticks, pfGpt_Call
 				return GPT_STATUS_ALREADY_RUNNING;
 			}
 			Gpt_Status[TIMER_2] = GPT_STATUS_ALREADY_RUNNING;
+			
+			Interrupt_install(TIMER2_OVF_IRQ, Gpt_T2Ovf_ISR);
+			
 			T2ovfCallback = FunToBeCalledInISR;
+			
 			if((u32_Ticks <= TIMER_2_MAX_TICKS) && (u32_Ticks != 0))
 			{
 				/* set ticks */
@@ -979,7 +996,7 @@ enuGpt_Status_t GptStart_aSync(uint8_t ChannelId, uint32_t u32_Ticks, pfGpt_Call
 					f32_TempValue -= gu32_T2_OvfCounts;
 					uint32_t u32_CountRemanider = f32_TempValue * TIMER_2_MAX_TICKS;
 					
-					TCNT2_R = u32_CountRemanider;
+					TCNT2_R = TIMER_2_MAX_TICKS - u32_CountRemanider;
 					
 					/* set to prescaler */
 					switch(strGpt_Channels[ChannelId].u8_Prescaler)
@@ -1073,7 +1090,10 @@ enuGpt_Status_t GptStart_aSync(uint8_t ChannelId, uint32_t u32_Ticks, pfGpt_Call
 		}
 		Gpt_Status[TIMER_1] = GPT_STATUS_ALREADY_RUNNING;
 		
+		Interrupt_install(TIMER1_OVF_IRQ, Gpt_T1Ovf_ISR);
+		
 		T1ovfCallback = FunToBeCalledInISR;
+		
 		if((u32_Ticks <= TIMER_1_MAX_TICKS) && (u32_Ticks != 0))
 		{
 			/* set ticks */
@@ -1149,7 +1169,7 @@ enuGpt_Status_t GptStart_aSync(uint8_t ChannelId, uint32_t u32_Ticks, pfGpt_Call
 			f32_TempValue -= gu32_T1_OvfCounts;
 			uint32_t u32_CountRemanider = f32_TempValue * TIMER_1_MAX_TICKS;
 			
-			TCNT1_R = u32_CountRemanider;
+			TCNT1_R = TIMER_1_MAX_TICKS - u32_CountRemanider;
 			
 			/* set to prescaler */
 			switch(strGpt_Channels[ChannelId].u8_Prescaler)
@@ -1236,21 +1256,19 @@ enuGpt_Status_t GptStop(uint8_t ChannelId)
 			break;
 		}
 
-case(TIMER_1):
-{
+		case(TIMER_1):
+		{
 	
-	CLEAR_BIT(TCCR1B_R, CS10_B);
-	CLEAR_BIT(TCCR1B_R, CS11_B);
-	CLEAR_BIT(TCCR1B_R, CS12_B);
-	TCNT1_R = 0x0000;
-	CLEAR_BIT(TIMSK_R, TOIE1_B);
-	
-	Gpt_Status[TIMER_1] = GPT_STATUS_NOT_RUNNING;
-	
-	break;
-}
-
-		
+			CLEAR_BIT(TCCR1B_R, CS10_B);
+			CLEAR_BIT(TCCR1B_R, CS11_B);
+			CLEAR_BIT(TCCR1B_R, CS12_B);
+			TCNT1_R = 0x0000;
+			CLEAR_BIT(TIMSK_R, TOIE1_B);
+			
+			Gpt_Status[TIMER_1] = GPT_STATUS_NOT_RUNNING;
+			
+			break;
+		}
 		case(TIMER_2):
 		{
 			CLEAR_BIT(TCCR2_R, CS20_B);
@@ -1269,19 +1287,6 @@ case(TIMER_1):
 	return GPT_STATUS_ERROR_OK;
 }
 /**************************************************************/
-/*****************************************************************************************
-* Parameters (in): Channel Id
-* Parameters (out): Error Status
-* Return value: enuGpt_Status_t
-* Description: this function will stop the timer if the timer starts and exceeds the max numbers 
-			   of counts allowed 
-******************************************************************************************/
-#if 0
-void T1ExpireFunc(void)
-{
-	GptStop(TIMER_1);
-}
-#endif
 /*****************************************************************************************
 * Parameters (in): Channel Id
 * Parameters (out): Error Status
@@ -1317,7 +1322,6 @@ enuGpt_Status_t Gpt_StartTimer(uint8_t ChannelId)
 					CLEAR_BIT(TCCR1B_R, CS12_B);
 						
 					SET_BIT(TIMSK_R, TOIE1_B);
-						
 					break;
 				}
 				case(PRESCALER_8):
@@ -1327,9 +1331,6 @@ enuGpt_Status_t Gpt_StartTimer(uint8_t ChannelId)
 					CLEAR_BIT(TCCR1B_R, CS12_B);
 						
 					SET_BIT(TIMSK_R, TOIE1_B);
-						
-
-						
 					break;
 				}
 				case(PRESCALER_64):
@@ -1339,8 +1340,6 @@ enuGpt_Status_t Gpt_StartTimer(uint8_t ChannelId)
 					CLEAR_BIT(TCCR1B_R, CS12_B);
 						
 					SET_BIT(TIMSK_R, TOIE1_B);
-						
-						
 					break;
 				}
 				case(PRESCALER_256):
@@ -1350,8 +1349,6 @@ enuGpt_Status_t Gpt_StartTimer(uint8_t ChannelId)
 					SET_BIT(TCCR1B_R, CS12_B);
 						
 					SET_BIT(TIMSK_R, TOIE1_B);
-						
-						
 					break;
 				}
 				case(PRESCALER_1024):
@@ -1361,8 +1358,6 @@ enuGpt_Status_t Gpt_StartTimer(uint8_t ChannelId)
 					SET_BIT(TCCR1B_R, CS12_B);
 						
 					SET_BIT(TIMSK_R,TOIE1_B);
-						
-						
 					break;
 				}
 				default: return GPT_STATUS_ERROR_NOK;
@@ -1375,6 +1370,330 @@ enuGpt_Status_t Gpt_StartTimer(uint8_t ChannelId)
 	
 	return GPT_STATUS_ERROR_OK;
 }
+
+/************************************************************************************************************************************************************/
+/************************************************************************************************************************************************************/
+/************************************************************************************************************************************************************/
+/************************************************************************************************************************************************************/
+/************************************************************************************************************************************************************/
+
+
+/*****************************************************************************************
+* Parameters (in): Channel Id
+* Parameters (out): Error Status
+* Return value: enuGpt_Status_t
+* Description: Enable the notification and install the callback function inside the IVT
+******************************************************************************************/
+enuGpt_Status_t Gpt_EnableNotification_OVF(uint8_t ChannelId, pfGpt_CallBack_t FunToBeCalledInISR)
+{
+	switch(strGpt_Channels[ChannelId].u8_TimerNumber)
+	{
+		case(TIMER_0):
+		{
+			SET_BIT(TIMSK_R, TOIE0_B);
+			Interrupt_install(TIMER0_OVF_IRQ, FunToBeCalledInISR);
+			break;
+		}
+		case(TIMER_1):
+		{
+			SET_BIT(TIMSK_R, TOIE1_B);
+			Interrupt_install(TIMER1_OVF_IRQ, FunToBeCalledInISR);
+			break;
+		}
+		case(TIMER_2):
+		{
+			SET_BIT(TIMSK_R, TOIE2_B);
+			Interrupt_install(TIMER2_OVF_IRQ, FunToBeCalledInISR);
+			break;
+		}
+		default:
+		{
+			return GPT_STATUS_ERROR_NOK;
+		}
+	}
+	return GPT_STATUS_ERROR_OK;
+}
+
+/*****************************************************************************************
+* Parameters (in): Channel Id
+* Parameters (out): Error Status
+* Return value: enuGpt_Status_t
+* Description: Set the counter value of the timer to a given value
+******************************************************************************************/
+enuGpt_Status_t Gpt_setCounterValue(uint8_t ChannelId, uint16_t CounterValue)
+{
+	switch(strGpt_Channels[ChannelId].u8_TimerNumber)
+	{
+		case(TIMER_0):
+		{
+			/* set ticks */
+			TCNT0_R = CounterValue;
+			break;
+		}
+		case(TIMER_1):
+		{
+			/* set ticks */
+			TCNT1_R = CounterValue;
+			break;
+		}
+		case(TIMER_2):
+		{
+			/* set ticks */
+			TCNT2_R = CounterValue;
+			break;
+		}
+		default:
+		{
+			return GPT_STATUS_ERROR_NOK;
+		}
+	}
+	return GPT_STATUS_ERROR_OK;
+}
+
+/*****************************************************************************************
+* Parameters (in): Channel Id
+* Parameters (out): Error Status
+* Return value: enuGpt_Status_t
+* Description: get the counter value of the timer
+******************************************************************************************/
+enuGpt_Status_t Gpt_getCounterValue(uint8_t ChannelId, uint16_t *CounterValue)
+{
+	switch(strGpt_Channels[ChannelId].u8_TimerNumber)
+	{
+		case(TIMER_0):
+		{
+			/* set ticks */
+			*CounterValue = TCNT0_R;
+			break;
+		}
+		case(TIMER_1):
+		{
+			/* set ticks */
+			*CounterValue = TCNT1_R;
+			break;
+		}
+		case(TIMER_2):
+		{
+			/* set ticks */
+			*CounterValue = TCNT2_R;
+			break;
+		}
+		default:
+		{
+			return GPT_STATUS_ERROR_NOK;
+		}
+	}
+	return GPT_STATUS_ERROR_OK;
+}
+
+/*****************************************************************************************
+* Parameters (in): Channel Id
+* Parameters (out): Error Status
+* Return value: enuGpt_Status_t
+* Description: Starts a given timer from an initial count
+******************************************************************************************/
+enuGpt_Status_t Gpt_Start(uint8_t ChannelId, uint16_t InitialCount)
+{
+	switch(strGpt_Channels[ChannelId].u8_TimerNumber)
+	{
+		case(TIMER_0):
+		{
+			if(Gpt_Status[TIMER_0] == GPT_STATUS_ALREADY_RUNNING)
+			{
+				return GPT_STATUS_ALREADY_RUNNING;
+			}
+			Gpt_Status[TIMER_0] = GPT_STATUS_ALREADY_RUNNING;
+			
+			/* set ticks */
+			TCNT0_R = InitialCount;
+				
+			/* set to prescaler */
+			switch(strGpt_Channels[ChannelId].u8_Prescaler)
+			{
+				case(PRESCALER_1):
+				{
+					SET_BIT(TCCR0_R, CS00_B);
+					CLEAR_BIT(TCCR0_R, CS01_B);
+					CLEAR_BIT(TCCR0_R, CS02_B);
+					break;
+				}
+				case(PRESCALER_8):
+				{
+					CLEAR_BIT(TCCR0_R, CS00_B);
+					SET_BIT(TCCR0_R, CS01_B);
+					CLEAR_BIT(TCCR0_R, CS02_B);
+					break;
+				}
+				case(PRESCALER_64):
+				{
+					SET_BIT(TCCR0_R, CS00_B);
+					SET_BIT(TCCR0_R, CS01_B);
+					CLEAR_BIT(TCCR0_R, CS02_B);
+					break;
+				}
+				case(PRESCALER_256):
+				{
+					CLEAR_BIT(TCCR0_R, CS00_B);
+					CLEAR_BIT(TCCR0_R, CS01_B);
+					SET_BIT(TCCR0_R, CS02_B);
+					break;
+				}
+				case(PRESCALER_1024):
+				{
+					SET_BIT(TCCR0_R, CS00_B);
+					CLEAR_BIT(TCCR0_R, CS01_B);
+					SET_BIT(TCCR0_R, CS02_B);
+					break;
+				}
+				default: return GPT_STATUS_ERROR_NOK;
+			}
+		}
+		case(TIMER_1):
+		{
+			if(Gpt_Status[TIMER_1] == GPT_STATUS_ALREADY_RUNNING)
+			{
+				return GPT_STATUS_ALREADY_RUNNING;
+			}
+			Gpt_Status[TIMER_1] = GPT_STATUS_ALREADY_RUNNING;
+			
+			/*T1ovfCallback = FunToBeCalledInISR;*/
+			
+			/* set ticks */
+			TCNT1_R = InitialCount;
+			
+			/* set to prescaler */
+			switch(strGpt_Channels[ChannelId].u8_Prescaler)
+			{
+				case(PRESCALER_1):
+				{
+					
+					SET_BIT(TCCR1B_R, CS10_B);
+					CLEAR_BIT(TCCR1B_R, CS11_B);
+					CLEAR_BIT(TCCR1B_R, CS12_B);
+					break;
+				}
+				case(PRESCALER_8):
+				{
+					CLEAR_BIT(TCCR1B_R, CS10_B);
+					SET_BIT(TCCR1B_R, CS11_B);
+					CLEAR_BIT(TCCR1B_R, CS12_B);
+					break;
+				}
+				case(PRESCALER_64):
+				{
+					SET_BIT(TCCR1B_R, CS10_B);
+					SET_BIT(TCCR1B_R, CS11_B);
+					CLEAR_BIT(TCCR1B_R, CS12_B);
+					break;
+				}
+				case(PRESCALER_256):
+				{
+					CLEAR_BIT(TCCR1B_R, CS10_B);
+					CLEAR_BIT(TCCR1B_R, CS11_B);
+					SET_BIT(TCCR1B_R, CS12_B);
+					break;
+				}
+				case(PRESCALER_1024):
+				{
+					SET_BIT(TCCR1B_R, CS10_B);
+					CLEAR_BIT(TCCR1B_R, CS11_B);
+					SET_BIT(TCCR1B_R, CS12_B);
+					break;
+				}
+				default: return GPT_STATUS_ERROR_NOK;
+			}
+			
+			break;
+		}
+		case(TIMER_2):
+		{
+			if(Gpt_Status[TIMER_2] == GPT_STATUS_ALREADY_RUNNING)
+			{
+				return GPT_STATUS_ALREADY_RUNNING;
+			}
+			Gpt_Status[TIMER_2] = GPT_STATUS_ALREADY_RUNNING;
+			
+			/*T1ovfCallback = FunToBeCalledInISR;*/
+			
+			/* set ticks */
+			TCNT2_R = InitialCount;
+				
+			/* set to prescaler */
+			switch(strGpt_Channels[ChannelId].u8_Prescaler)
+			{
+				case(PRESCALER_1):
+				{
+
+					SET_BIT(TCCR2_R, CS20_B);
+					CLEAR_BIT(TCCR2_R, CS21_B);
+					CLEAR_BIT(TCCR2_R, CS22_B);
+					break;
+				}
+				case(PRESCALER_8):
+				{
+					CLEAR_BIT(TCCR2_R, CS20_B);
+					SET_BIT(TCCR2_R, CS21_B);
+					CLEAR_BIT(TCCR2_R, CS22_B);
+					break;
+				}
+				case(PRESCALER_32):
+				{
+					SET_BIT(TCCR2_R, CS20_B);
+					SET_BIT(TCCR2_R, CS21_B);
+					CLEAR_BIT(TCCR2_R, CS22_B);
+					break;
+				}
+				case(PRESCALER_64):
+				{
+
+					CLEAR_BIT(TCCR2_R, CS20_B);
+					CLEAR_BIT(TCCR2_R, CS21_B);
+					SET_BIT(TCCR2_R, CS22_B);
+					break;
+				}
+				case(PRESCALER_128):
+				{
+
+					SET_BIT(TCCR2_R, CS20_B);
+					CLEAR_BIT(TCCR2_R, CS21_B);
+					SET_BIT(TCCR2_R, CS22_B);
+					break;
+				}
+				case(PRESCALER_256):
+				{
+
+					CLEAR_BIT(TCCR2_R, CS20_B);
+					SET_BIT(TCCR2_R, CS21_B);
+					SET_BIT(TCCR2_R, CS22_B);
+					break;
+				}
+				case(PRESCALER_1024):
+				{
+
+					SET_BIT(TCCR2_R, CS20_B);
+					SET_BIT(TCCR2_R, CS21_B);
+					SET_BIT(TCCR2_R, CS22_B);
+					break;
+				}
+				default: return GPT_STATUS_ERROR_NOK;
+			}
+		
+			break;
+		}
+		default: return GPT_STATUS_ERROR_NOK;
+	}
+	
+	return GPT_STATUS_ERROR_OK;
+}
+
+
+
+/************************************************************************************************************************************************************/
+/************************************************************************************************************************************************************/
+/************************************************************************************************************************************************************/
+/************************************************************************************************************************************************************/
+/************************************************************************************************************************************************************/
+
 /*****************************************************************************************
 * Parameters (in): Channel Id
 * Parameters (out): Error Status
@@ -1404,31 +1723,18 @@ void Gpt_ReturnCounterVal(uint8_t ChannelId , uint32_t *u32_CounterVal)
 /* Interrupts */
 
 /*****************************************************************************************
-* Parameters (in): pointer to function to be called from ISR
-* Parameters (out): None
-* Return value: None
-* Description: sets the function to be called by overflow timer  ISR
-******************************************************************************************/
-void setOvfCallback(pfGpt_CallBack_t FunToBeCalledInISR)
-{
-	T0ovfCallback = FunToBeCalledInISR;
-	
-}
-
-
-/*****************************************************************************************
 * Parameters (in): None
 * Parameters (out):None
 * Return value: None
 * Description: interrupt service routine for timer 0 overflow
 ******************************************************************************************/
-ISR(TIMER0_OVF)
+void Gpt_T0Ovf_ISR(uint8_t Int_ID)
 {
 	if(gu32_T0_OvfCounts == 0)
 	{
 		 Gpt_Status[TIMER_0] = GPT_STATUS_NOT_RUNNING;
 		 GptStop(TIMER_0);
-		 T0ovfCallback();
+		 T0ovfCallback(Int_ID);
 	}
 	else
 	{
@@ -1441,7 +1747,7 @@ ISR(TIMER0_OVF)
 * Return value: None
 * Description: interrupt service routine for timer 1 overflow
 ******************************************************************************************/
-ISR(TIMER1_OVF)
+void Gpt_T1OvfCounter_ISR(uint8_t Int_ID)
 {
 	gu32_T1_OVF_TICKS++;
 	#if 0
@@ -1451,7 +1757,7 @@ ISR(TIMER1_OVF)
 		GptStop(TIMER_1);
 		/* Reset  gu32_T1_OVF_TICKS */
 		gu32_T1_OVF_TICKS=0;
-		T1ovfCallback();
+		T1ovfCallback(Int_ID);
 		
 	}
 	else
@@ -1464,15 +1770,36 @@ ISR(TIMER1_OVF)
 * Parameters (in): None
 * Parameters (out):None
 * Return value: None
+* Description: interrupt service routine for timer 1 overflow
+******************************************************************************************/
+void Gpt_T1Ovf_ISR(uint8_t Int_ID)
+{
+
+	if(gu32_T1_OvfCounts == 0)
+	{
+		Gpt_Status[TIMER_1] = GPT_STATUS_NOT_RUNNING;
+		GptStop(TIMER_1);
+		T1ovfCallback(Int_ID);
+		
+	}
+	else
+	{
+		gu32_T1_OvfCounts--;
+	}
+}
+/*****************************************************************************************
+* Parameters (in): None
+* Parameters (out):None
+* Return value: None
 * Description: interrupt service routine for timer 2 overflow
 ******************************************************************************************/
-ISR(TIMER2_OVF)
+void Gpt_T2Ovf_ISR(uint8_t Int_ID)
 {
 	if(gu32_T2_OvfCounts == 0)
 	{
 		Gpt_Status[TIMER_2] = GPT_STATUS_NOT_RUNNING;
 		GptStop(TIMER_2);
-		T2ovfCallback();
+		T2ovfCallback(Int_ID);
 	}
 	else
 	{

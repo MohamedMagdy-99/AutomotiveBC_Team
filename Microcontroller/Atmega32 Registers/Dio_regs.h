@@ -14,7 +14,7 @@
 #ifndef PORT_REG_H_
 #define PORT_REG_H_
 
-#include "../Std_Types.h"
+#include "Std_Types.h"
 
 /*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*/
 /*-*-*-*-*-*-*-*-*-*-*-*- DIO REGISTERS -*-*-*-*-*-*-*-*-*-*-*-*/

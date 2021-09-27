@@ -32,6 +32,15 @@ static uint32_t power(uint8_t base, uint8_t power_val)
 	return result;
 }
 
+void String_split(uint8_t *source, uint8_t *destination, uint8_t startIndex, uint8_t endIndex)
+{
+	uint8_t i=0;
+	for (i=startIndex; i<endIndex; i++)
+	{
+		destination[i-startIndex] = source[i];
+	}
+}
+
 uint16_t String_3ByteHexAddress_ToDecimal(uint8_t* u8_tempAddress)
 {
 	sint8_t u8_loopCounter = Initial_Value;
@@ -323,14 +332,24 @@ void EmptyString(uint8_t *string)
 		string[u8_loopIndex++] = '\0';
 }
 
-void stringCopy(uint8_t* source, uint8_t* destination)
+void arrayCopy(uint8_t* source, uint8_t* destination, uint16_t size)
 {
     uint8_t u8_loopIndex=0;
-    while(source[u8_loopIndex] != '\0')
+    while(size != u8_loopIndex)
     {
 	    destination[u8_loopIndex] = source[u8_loopIndex];
 	    u8_loopIndex++;
     }
+}
+void stringCopy(uint8_t* source, uint8_t* destination)
+{
+	uint8_t u8_loopIndex=0;
+	while(source[u8_loopIndex] != '\0')
+	{
+		destination[u8_loopIndex] = source[u8_loopIndex];
+		u8_loopIndex++;
+	}
+	destination[u8_loopIndex] = '\0';
 }
 void stringHexToNum(uint8_t *pu8_String, uint16_t *pu16_Num)
 {

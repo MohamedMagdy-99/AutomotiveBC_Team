@@ -27,7 +27,7 @@ enuSWPwm_State_t genu_SWPwmModStatus = SWPWM_UNINITIALIZED;
 * Return value: None
 * Description: Function to be called inside the timer's ISR.
 *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*/
-void waveFunction(void)
+void waveFunction(uint8_t IntVect_Num)
 {
 	/* Toggle the Pin of the PWM Channel */
 	if(Dio_togglePin(SWPwm_Channels[gu8_currentPwmChannel].u8_DioChannelID) != DIO_STATUS_ERROR_OK)
@@ -80,15 +80,14 @@ enuSWPwm_Status_t SWPwm_Init(void)
 	enuGpt_Status_t Gpt_State = GptInit();
 	if((Gpt_State != GPT_STATUS_ERROR_OK) && (Gpt_State != GPT_STATUS_ERROR_ALREADY_INIT)) //GPT_STATUS_ERROR_ALREADY_INIT
 		return SWPWM_STATUS_ERROR_NOK;
-		
+	
 	/* Initialize the DIO Module and check if any error returned */
 	enuDio_Status_t Dio_State = Dio_init(strDio_pins);
 	if((DIO_STATUS_ERROR_OK != Dio_State) && (DIO_STATUS_ALREADY_INIT != Dio_State))
 		return SWPWM_STATUS_ERROR_NOK;
 	
+	EnableGlobalInterrupts();
 		
-
-	
 	/* Change the state of the SWPWM Module to Initialized */
 	genu_SWPwmModStatus = SWPWM_INITIALIZED;
 	return SWPWM_STATUS_ERROR_OK;
@@ -126,10 +125,10 @@ enuSWPwm_Status_t SWPwm_Start(u8SWPwm_Channel_t u8_ChannelID, uint32_t u32_Freq,
 	{
 		return SWPWM_STATUS_DC_OUTRANGE;
 	}
-	if(gstr_ChannelsData[u8_ChannelID].enuChannelState == SWPWM_RUNNING)
+	/*if(gstr_ChannelsData[u8_ChannelID].enuChannelState == SWPWM_RUNNING)
 	{
 		return SWPWM_STATUS_RUNNING;
-	}
+	}*/
 /**************************************************************************************/
 /*								End of Error Checking								  */
 /**************************************************************************************/
@@ -203,10 +202,10 @@ enuSWPwm_Status_t SWPwm_Stop(u8SWPwm_Channel_t u8_ChannelID)
 		return SWPWM_STATUS_PWM_ID_INVALID;
 	}
 	/* Check if the duty cycle given is out of range */
-	if(gstr_ChannelsData[u8_ChannelID].enuChannelState != SWPWM_RUNNING)
+	/*if(gstr_ChannelsData[u8_ChannelID].enuChannelState != SWPWM_RUNNING)
 	{
 		return SWPWM_STATUS_RUNNING;
-	}
+	}*/
 /**************************************************************************************/
 /*								End of Error Checking								  */
 /**************************************************************************************/

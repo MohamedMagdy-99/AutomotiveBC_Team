@@ -9,7 +9,7 @@
 #define DELAY_H_
 
 #include "Delay_Cfg.h"
-#include "../Std_Types.h"
+#include "Std_Types.h"
 
 #if F_DELAY_OSC == 1000000
 #define DELAY_MS_ITERATION		13

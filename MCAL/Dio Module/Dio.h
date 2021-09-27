@@ -12,7 +12,7 @@
 /*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*/
 /*-*-*-*-*- INCLUDES *-*-*-*-*-*/
 #include "Dio_LCfg.h"
-#include "..\..\Microcontroller\Platform_Types.h"
+#include "Platform_Types.h"
 /*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*/
 /*-*-*-*-*- CONSTANTS -*-*-*-*-*-*/
 
@@ -89,6 +89,9 @@ enuDio_Status_t Dio_togglePin(uint8_t u8_pinID);
 
 /*- Read DIO Pin -*/
 enuDio_Status_t Dio_readPin(uint8_t u8_pinID, uint8_t *pu8_pinValue);
+
+/*- Change Pin Direction -*/
+enuDio_Status_t Dio_changePinDirection(uint8_t u8_pinID, enuDio_Direction_t u8_pinDirection, uint8_t u8_pinInitialState);
 
 /* ToDo *//*
 enuDio_Status_t Dio_readPort(uint8_t u8_PortNum, uint8_t *pu8_portValue);

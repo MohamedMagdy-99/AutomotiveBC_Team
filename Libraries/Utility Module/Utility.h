@@ -9,7 +9,7 @@
 #ifndef UTILITY_H_
 #define UTILITY_H_
 
-#include "../../Microcontroller/Std_Types.h"
+#include "Std_Types.h"
 
 #define DEC		0
 #define HEX		1	
@@ -20,7 +20,7 @@
 #define BACK_SPACE	  '\b'
 
 uint16_t String_3ByteHexAddress_ToDecimal(uint8_t* u8_tempAddress);
-
+void String_split(uint8_t *source, uint8_t *destination, uint8_t startIndex, uint8_t endIndex);
 void integerToString(uint16_t u16_Num, uint8_t *pu8_String, uint8_t u8_base);
 void stringToInteger(uint8_t* au8_string, uint32_t* u32_integer);
 
@@ -38,6 +38,7 @@ void floatToString(float32_t f32_num, uint8_t* string);
 
 void stringConcatenate(uint8_t* destination, uint8_t* source);
 
+void arrayCopy(uint8_t* source, uint8_t* destination, uint16_t size);
 void stringCopy(uint8_t* source, uint8_t* destination);
 uint8_t Max_String_Num(uint8_t* string1, uint8_t* string2);
 void EmptyString(uint8_t *string);
